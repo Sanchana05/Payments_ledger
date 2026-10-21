@@ -1,0 +1,47 @@
+# PostgreSQL for the ledger + optimization lab.
+# Durability settings are explicit on purpose: the crash-recovery test and the
+# write-cost measurements are only meaningful with fsync/WAL fully on.
+services:
+  db:
+    image: postgres:16
+    container_name: ledger-lab-db
+    environment:
+      POSTGRES_USER: ledger
+      POSTGRES_PASSWORD: ledger
+      POSTGRES_DB: ledger
+    ports:
+      - "${PGPORT:-54329}:5432"
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c shared_buffers=${PG_SHARED_BUFFERS:-1GB}
+      -c effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-3GB}
+      -c work_mem=64MB
+      -c maintenance_work_mem=1GB
+      -c max_connections=200
+      -c max_wal_size=8GB
+      -c min_wal_size=2GB
+      -c checkpoint_timeout=15min
+      -c fsync=on
+      -c synchronous_commit=on
+      -c full_page_writes=on
+      -c random_page_cost=1.1
+      -c track_io_timing=on
+      -c jit=off
+      -c log_min_messages=warning
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    shm_size: 1g
+    stop_grace_period: 30s
+    healthcheck:
+      # -h 127.0.0.1 forces TCP: the temporary init-time server only listens on a
+      # unix socket, so this does not report healthy before init scripts finish.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U ledger -d ledger"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 5s
+
+volumes:
+  pgdata:

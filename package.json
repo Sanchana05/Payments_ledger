@@ -1,0 +1,31 @@
+{
+  "name": "ledger-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Payments settlement ledger (correctness under concurrency) + PostgreSQL optimization lab (10M-50M skewed rows)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "migrate": "tsx src/db/migrate.ts",
+    "seed": "tsx scripts/seed.ts",
+    "test": "jest --runInBand",
+    "bench": "tsx bench/run.ts",
+    "report": "tsx scripts/report.ts",
+    "smoke": "tsx scripts/smoke.ts"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.16.0",
+    "@types/pg": "^8.11.10",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
